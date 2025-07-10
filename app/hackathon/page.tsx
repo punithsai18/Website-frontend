@@ -17,7 +17,7 @@ export default function HackathonPage() {
             {/* Banner/Pic */}
             <div className="flex-1 flex items-center justify-center">
               <Image
-                src="/hacksmartx.png"
+                src="/hacksmartX.png"
                 alt="Hackathon banner"
                 width={800}
                 height={450}
