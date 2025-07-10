@@ -16,16 +16,14 @@ export default function HackathonPage() {
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 mb-6">
             {/* Banner/Pic */}
             <div className="flex-1 flex items-center justify-center">
-              <div className="w-full h-56 lg:h-72 xl:h-80 bg-muted rounded-xl flex items-center justify-center overflow-hidden">
-                <Image
-                  src="/hackathon.png"
-                  alt="Hackathon banner"
-                  width={960}
-                  height={540}
-                  className="object-cover w-full h-full rounded-xl"
-                  priority
-                />
-              </div>
+              <Image
+                src="/hacksmartx.png"
+                alt="Hackathon banner"
+                width={800}
+                height={450}
+                className="object-contain w-full h-56 lg:h-72 xl:h-80 rounded-2xl"
+                priority
+              />
             </div>
             {/* Date, Location, Status */}
             <div className="flex flex-col gap-3 lg:gap-4 lg:w-72 xl:w-80">
