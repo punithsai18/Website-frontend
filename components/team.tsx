@@ -102,7 +102,7 @@ const ROLE_COLORS: Record<string, string> = {
 }
 
 export default function Team() {
-  const [teamMembers, setTeamMembers] = useState<Array<{_id: string; name: string; role: string[]; bio: string; image: string; github: string; linkedin: string; email: string;}>>([])
+  const [teamMembers, setTeamMembers] = useState<Array<{_id: string; name: string; role: string[]; bio: string; image: string; linkedin: string; email: string;}>>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [activeRole, setActiveRole] = useState("all")
@@ -271,13 +271,6 @@ export default function Team() {
                                 </p>
                               </CardContent>
                               <CardFooter className="flex justify-center gap-4 pt-0 pb-4">
-                                <Link 
-                                  href={member.github} 
-                                  className="text-muted-foreground hover:text-foreground hover:scale-110 transition-all p-2 rounded-full bg-muted/50 hover:bg-primary/10"
-                                  title="GitHub"
-                                >
-                                  <Github className="h-4 w-4" />
-                                </Link>
                                 <Link 
                                   href={member.linkedin} 
                                   className="text-muted-foreground hover:text-foreground hover:scale-110 transition-all p-2 rounded-full bg-muted/50 hover:bg-primary/10"

@@ -166,13 +166,6 @@ export default function Events({ initialEvents }: { initialEvents: any[] }) {
               )}
             </div>
           </CardContent>
-          
-          <div className="p-4 pt-0">
-            <button className="w-full inline-flex items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground px-4 py-2 text-sm font-medium transition-all group/btn">
-              {event.status === "past" ? "View Recap" : "Register Now"}
-              <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-            </button>
-          </div>
         </Card>
       </motion.div>
     </motion.div>
@@ -286,16 +279,6 @@ export default function Events({ initialEvents }: { initialEvents: any[] }) {
           viewport={{ once: true }}
           className="text-center mt-16"
         >
-          <div className="inline-flex items-center rounded-full bg-primary/10 px-4 py-2 text-sm text-primary mb-4">
-            <CalendarDays className="h-4 w-4 mr-1" /> Never miss an event
-          </div>
-          <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-            Join our newsletter to stay updated on upcoming workshops, hackathons, and guest sessions.
-          </p>
-          <button className="inline-flex items-center rounded-full bg-primary px-6 py-3 text-white font-medium transition-all hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5">
-            Subscribe to Updates
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </button>
         </motion.div>
       </div>
     </section>
