@@ -298,24 +298,7 @@ export default function Team() {
         )}
 
         
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          viewport={{ once: true }}
-          className="text-center mt-16"
-        >
-          <div className="inline-flex items-center rounded-full bg-primary/10 px-4 py-2 text-sm text-primary mb-4">
-            <Users className="h-4 w-4 mr-1" /> Want to join our team?
-          </div>
-          <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-            We're always looking for passionate individuals to join our IoT community and work on exciting projects.
-          </p>
-          <button className="inline-flex items-center rounded-full bg-primary px-6 py-3 text-white font-medium transition-all hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5">
-            Apply Now
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </button>
-        </motion.div>
+        
       </div>
     </section>
   )

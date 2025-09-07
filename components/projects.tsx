@@ -296,16 +296,7 @@ export default function Projects({ initialProjects }: { initialProjects: any[] }
           <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
             Join our club and start building innovative IoT solutions with industry experts and cutting-edge technology.
           </p>
-          <Button 
-            size="lg" 
-            className="rounded-full bg-primary px-8 font-medium transition-all hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5"
-            asChild
-          >
-            <Link href="/join">
-              Submit Your Project
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+          
         </motion.div>
       </div>
     </section>

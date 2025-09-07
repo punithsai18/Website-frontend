@@ -289,29 +289,7 @@ export default function Contact() {
           </motion.div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          viewport={{ once: true }}
-          className="text-center mt-16"
-        >
-          <div className="inline-flex items-center rounded-full bg-primary/10 px-4 py-2 text-sm text-primary mb-4">
-            <Sparkles className="h-4 w-4 mr-1" /> Want to join our community?
-          </div>
-          <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-            Become part of our growing IoT community and work on exciting projects with industry experts.
-          </p>
-          <Button 
-            className="rounded-full bg-primary px-6 py-3 text-white font-medium transition-all hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5"
-            asChild
-          >
-            <Link href="/join">
-              Join the Club
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </motion.div>
+        
       </div>
     </section>
   )
