@@ -5,67 +5,46 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
 import api from "@/lib/api"
-import { Github, Linkedin, Mail, Sparkles, Users, ArrowRight } from "lucide-react"
+import { Github, Linkedin, Mail, Sparkles, Users, Search } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import type { Variants } from "framer-motion"
 
-const containerVariants :Variants= {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
+    transition: { staggerChildren: 0.1 }
   }
 }
 
-const itemVariants :Variants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 15
-    }
+    transition: { type: "spring", stiffness: 100, damping: 15 }
   }
 }
 
-const hoverVariants :Variants= {
+const hoverVariants: Variants = {
   hover: {
-    y: -5,
-    transition: {
-      type: "spring",
-      stiffness: 400,
-      damping: 10
-    }
+    scale: 1.05,
+    y: -8,
+    transition: { type: "spring", stiffness: 300, damping: 15 }
   }
 }
 
 const ROLE_ORDER = [
-  "faculty coordinator",
-  "student mentor",
-  "president",
-  "co head",
-  "iot",
-  "aiot",
-  "iort",
-  "iiot",
-  "team lead",
-  "project lead",
-  "core member",
-  "trainee",
-  "web/app dev",
-  "marketing team"
-];
+  "faculty coordinator", "student mentor", "president", "co head", "iot", "aiot",
+  "iort", "iiot", "team lead", "project lead", "core member", "trainee",
+  "web/app dev", "marketing team"
+]
 
 const ROLE_LABELS: Record<string, string> = {
   "faculty coordinator": "Faculty Coordinators",
@@ -102,10 +81,20 @@ const ROLE_COLORS: Record<string, string> = {
 }
 
 export default function Team() {
-  const [teamMembers, setTeamMembers] = useState<Array<{_id: string; name: string; role: string[]; bio: string; image: string; linkedin: string; email: string;}>>([])
+  const [teamMembers, setTeamMembers] = useState<Array<{
+    _id: string
+    name: string
+    role: string[]
+    bio: string
+    image: string
+    linkedin: string
+    github?: string
+    email: string
+  }>>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [activeRole, setActiveRole] = useState("all")
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     api.get("/members")
@@ -119,42 +108,43 @@ export default function Team() {
       })
   }, [])
 
-  
   const memberToHighestRole = (member: any) => {
-    if (!Array.isArray(member.role)) return member.role;
+    if (!Array.isArray(member.role)) return member.role
     for (const role of ROLE_ORDER) {
-      if (member.role.includes(role)) return role;
+      if (member.role.includes(role)) return role
     }
-    return member.role[0] || "";
-  };
-  
-  const membersWithHighestRole = teamMembers.map(m => ({ ...m, highestRole: memberToHighestRole(m) }));
-  
-  
+    return member.role[0] || ""
+  }
+
+  const membersWithHighestRole = teamMembers.map(m => ({
+    ...m,
+    highestRole: memberToHighestRole(m)
+  }))
+
   const groupedMembers = ROLE_ORDER.map(role => ({
     role,
     members: membersWithHighestRole.filter(m => m.highestRole === role),
     color: ROLE_COLORS[role] || "from-gray-500 to-gray-700"
   })).filter(group => group.members.length > 0)
 
- 
   const allRoles = groupedMembers.map(group => group.role)
+
+  // 🔍 Filter by search query
+  const filteredGroups = groupedMembers.map(group => ({
+    ...group,
+    members: group.members.filter(m =>
+      m.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  }))
 
   return (
     <section id="team" className="relative py-20 bg-gradient-to-b from-background to-muted/50 rounded-lg overflow-hidden">
-      
       <div className="absolute top-0 left-0 w-full h-72 bg-gradient-to-r from-primary/5 to-blue-400/5 -skew-y-3 -translate-y-1/2"></div>
       <div className="absolute top-20 -right-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 -left-20 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl"></div>
-      
+
       <div className="container relative z-10">
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="mb-16 text-center"
-        >
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }} className="mb-16 text-center">
           <div className="inline-flex items-center rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary mb-6">
             <Sparkles className="h-4 w-4 mr-2" /> Amazing People
           </div>
@@ -166,33 +156,36 @@ export default function Team() {
           </p>
         </motion.div>
 
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          viewport={{ once: true }}
-          className="flex flex-wrap justify-center gap-3 mb-12"
-        >
+        {/* 🔍 Search Bar */}
+        <div className="flex justify-center mb-8">
+          <div className="relative w-full max-w-md">
+            <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search team members..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 rounded-full border border-border focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground shadow-sm"
+            />
+          </div>
+        </div>
+
+        {/* Filter Buttons */}
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} viewport={{ once: true }} className="flex flex-wrap justify-center gap-3 mb-12">
           <button
-            className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-medium transition-all ${
-              activeRole === "all" 
-                ? "bg-primary text-primary-foreground shadow-md" 
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            }`}
+            className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-medium transition-all ${activeRole === "all"
+                ? "bg-primary text-primary-foreground shadow-md"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
             onClick={() => setActiveRole("all")}
           >
-            <Users className="h-4 w-4 mr-1" />
-            All Members
+            <Users className="h-4 w-4 mr-1" /> All Members
           </button>
           {allRoles.map(role => (
             <button
               key={role}
-              className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                activeRole === role 
-                  ? "bg-primary text-primary-foreground shadow-md" 
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
+              className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-medium transition-all ${activeRole === role
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
               onClick={() => setActiveRole(role)}
             >
               {ROLE_LABELS[role] || role}
@@ -201,50 +194,30 @@ export default function Team() {
         </motion.div>
 
         {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="flex flex-col items-center">
-              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-              <p className="text-muted-foreground">Loading team members...</p>
-            </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="animate-pulse bg-muted h-64 rounded-xl" />
+            ))}
           </div>
         ) : error ? (
           <div className="text-center text-red-500 py-10">{error}</div>
         ) : (
           <div className="space-y-16">
-            {groupedMembers
-              .filter(group => activeRole === "all" || activeRole === group.role)
-              .map((group) => (
-                <motion.div 
-                  key={group.role}
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                  viewport={{ once: true }}
-                >
+            {filteredGroups
+              .filter(group => (activeRole === "all" || activeRole === group.role) && group.members.length > 0)
+              .map(group => (
+                <motion.div key={group.role} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.5 }} viewport={{ once: true }}>
                   <div className="flex items-center justify-center mb-8">
                     <h3 className={`text-2xl md:text-3xl font-bold text-center px-6 py-2 rounded-full bg-gradient-to-r ${group.color} text-white shadow-md`}>
                       {ROLE_LABELS[group.role] || group.role}
                     </h3>
                   </div>
-                  
-                  <motion.div
-                    variants={containerVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                  >
+
+                  <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     <AnimatePresence>
                       {group.members.map((member, index) => (
-                        <motion.div
-                          key={member._id || index}
-                          variants={itemVariants}
-                          whileHover="hover"
-                        >
-                          <motion.div
-                            variants={hoverVariants}
-                            className="h-full"
-                          >
+                        <motion.div key={member._id || index} variants={itemVariants} whileHover="hover">
+                          <motion.div variants={hoverVariants} className="h-full">
                             <Card className="group h-full overflow-hidden border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300 bg-card/80 backdrop-blur-md rounded-xl">
                               <CardHeader className="text-center flex flex-col items-center pb-3">
                                 <div className="relative mb-4">
@@ -256,36 +229,38 @@ export default function Team() {
                                     </AvatarFallback>
                                   </Avatar>
                                 </div>
-                                <CardTitle className="text-lg font-semibold group-hover:text-primary transition-colors">
-                                  {member.name}
-                                </CardTitle>
+                                <CardTitle className="text-lg font-semibold group-hover:text-primary transition-colors">{member.name}</CardTitle>
                                 <CardDescription className="text-sm">
                                   {Array.isArray(member.role)
                                     ? member.role.map(r => ROLE_LABELS[r] || r).join(", ")
                                     : (ROLE_LABELS[member.role] || member.role)}
                                 </CardDescription>
                               </CardHeader>
+
                               <CardContent className="text-center px-4 pb-4">
-                                <p className="text-sm text-muted-foreground line-clamp-3 group-hover:text-foreground transition-colors">
+                                <p className="text-sm text-muted-foreground line-clamp-3 group-hover:text-foreground transition-colors mb-4">
                                   {member.bio}
                                 </p>
+
+                                {/* Inline Social Icons */}
+                                <div className="flex justify-center gap-4">
+                                  {member.linkedin && (
+                                    <Link href={member.linkedin} target="_blank" className="text-muted-foreground hover:text-primary hover:scale-110 transition-all p-2 rounded-full bg-muted/50 hover:bg-primary/10">
+                                      <Linkedin className="h-4 w-4" />
+                                    </Link>
+                                  )}
+                                  {member.github && (
+                                    <Link href={member.github} target="_blank" className="text-muted-foreground hover:text-primary hover:scale-110 transition-all p-2 rounded-full bg-muted/50 hover:bg-primary/10">
+                                      <Github className="h-4 w-4" />
+                                    </Link>
+                                  )}
+                                  {member.email && (
+                                    <Link href={`mailto:${member.email}`} className="text-muted-foreground hover:text-primary hover:scale-110 transition-all p-2 rounded-full bg-muted/50 hover:bg-primary/10">
+                                      <Mail className="h-4 w-4" />
+                                    </Link>
+                                  )}
+                                </div>
                               </CardContent>
-                              <CardFooter className="flex justify-center gap-4 pt-0 pb-4">
-                                <Link 
-                                  href={member.linkedin} 
-                                  className="text-muted-foreground hover:text-foreground hover:scale-110 transition-all p-2 rounded-full bg-muted/50 hover:bg-primary/10"
-                                  title="LinkedIn"
-                                >
-                                  <Linkedin className="h-4 w-4" />
-                                </Link>
-                                <Link 
-                                  href={`mailto:${member.email}`} 
-                                  className="text-muted-foreground hover:text-foreground hover:scale-110 transition-all p-2 rounded-full bg-muted/50 hover:bg-primary/10"
-                                  title="Email"
-                                >
-                                  <Mail className="h-4 w-4" />
-                                </Link>
-                              </CardFooter>
                             </Card>
                           </motion.div>
                         </motion.div>
@@ -296,9 +271,6 @@ export default function Team() {
               ))}
           </div>
         )}
-
-        
-        
       </div>
     </section>
   )
