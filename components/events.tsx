@@ -44,7 +44,7 @@ const hoverVariants: Variants = {
   },
 };
 
-export default function Events({ initialEvents }: { initialEvents: any[] }) {
+export default function Events({ initialEvents = [] }: { initialEvents?: any[] }) {
   const [events, setEvents] = useState<any[]>(initialEvents || []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
