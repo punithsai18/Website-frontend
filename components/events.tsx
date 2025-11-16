@@ -6,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import api from "@/lib/api";
 import {
   CalendarDays,
   Clock,
@@ -46,27 +45,27 @@ const hoverVariants: Variants = {
 
 export default function Events({ initialEvents = [] }: { initialEvents?: any[] }) {
   const [events, setEvents] = useState<any[]>(initialEvents || []);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
 
+  // -------------------------------------------------
+  // FIX: No client fetching — events come from server.
+  // Keep loading/error for UI, but disable fetching.
+  // -------------------------------------------------
   useEffect(() => {
-    if (!initialEvents || initialEvents.length === 0) {
-      setLoading(true);
-      api
-        .get("/events")
-        .then((res) => {
-          setEvents(res.data);
-          setLoading(false);
-        })
-        .catch(() => {
-          setError("Failed to load events.");
-          setLoading(false);
-        });
+    if (initialEvents && initialEvents.length > 0) {
+      setEvents(initialEvents);
+      setLoading(false);
+    } else {
+      // No events passed → show empty state without fetch
+      setEvents([]);
+      setLoading(false);
     }
   }, [initialEvents]);
 
   const eventTypes = ["upcoming", "past", "workshop", "competition"];
+
   const filteredEvents =
     activeFilter === "all"
       ? events
@@ -95,7 +94,7 @@ export default function Events({ initialEvents = [] }: { initialEvents?: any[] }
     >
       <motion.div variants={hoverVariants} className="h-full">
         <Card className="group flex flex-col h-full overflow-hidden border border-border/50 shadow-lg hover:shadow-2xl hover:shadow-blue-200/20 transition-all duration-500 bg-card/80 backdrop-blur-md rounded-2xl hover:-translate-y-1 relative">
-          {/* Status badge */}
+          
           {event.status && (
             <div
               className={`absolute top-4 right-4 z-10 flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full backdrop-blur-sm ${
@@ -119,7 +118,6 @@ export default function Events({ initialEvents = [] }: { initialEvents?: any[] }
             </div>
           )}
 
-          {/* ✅ FIXED Image Section */}
           <div className="relative aspect-video w-full overflow-hidden rounded-t-2xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/30 dark:to-indigo-900/20">
             <motion.div
               className="w-full h-full flex items-center justify-center overflow-hidden"
@@ -137,10 +135,8 @@ export default function Events({ initialEvents = [] }: { initialEvents?: any[] }
               />
             </motion.div>
 
-            {/* Overlay for readability */}
             <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent"></div>
 
-            {/* Type tag */}
             {event.type && (
               <div className="absolute top-4 left-4 bg-primary/10 text-primary text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur">
                 {event.type}
@@ -148,7 +144,6 @@ export default function Events({ initialEvents = [] }: { initialEvents?: any[] }
             )}
           </div>
 
-          {/* Content */}
           <CardHeader className="pb-3">
             <CardTitle className="text-xl font-bold tracking-tight group-hover:text-primary transition-colors line-clamp-2">
               {event.name}
@@ -169,10 +164,12 @@ export default function Events({ initialEvents = [] }: { initialEvents?: any[] }
                 <Clock className="mr-2 h-4 w-4 text-indigo-500" />
                 <span>{event.time}</span>
               </div>
+
               <div className="flex items-center text-muted-foreground">
                 <MapPin className="mr-2 h-4 w-4 text-pink-500" />
                 <span className="line-clamp-1">{event.location}</span>
               </div>
+
               {event.attendees && (
                 <div className="flex items-center text-muted-foreground">
                   <Users className="mr-2 h-4 w-4 text-green-500" />
@@ -181,6 +178,7 @@ export default function Events({ initialEvents = [] }: { initialEvents?: any[] }
               )}
             </div>
           </CardContent>
+
         </Card>
       </motion.div>
     </motion.div>
@@ -191,13 +189,12 @@ export default function Events({ initialEvents = [] }: { initialEvents?: any[] }
       id="events"
       className="relative py-20 bg-gradient-to-b from-background to-muted/50 rounded-xl overflow-hidden"
     >
-      {/* Background elements */}
       <div className="absolute top-0 left-0 w-full h-72 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 -skew-y-3 -translate-y-1/2"></div>
       <div className="absolute top-20 -right-20 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 -left-20 w-72 h-72 bg-indigo-400/10 rounded-full blur-3xl"></div>
 
       <div className="container relative z-10 px-4">
-        {/* Header */}
+        
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -208,16 +205,18 @@ export default function Events({ initialEvents = [] }: { initialEvents?: any[] }
           <div className="inline-flex items-center rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary mb-6">
             <Sparkles className="h-4 w-4 mr-2" /> Upcoming Experiences
           </div>
+
           <h2 className="text-4xl font-bold tracking-tight sm:text-5xl bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
             Club Events
           </h2>
+
           <p className="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto">
             Join us for immersive workshops, competitions, and guest talks that
             expand your IoT horizons.
           </p>
         </motion.div>
 
-        {/* Filters */}
+        {/* Filter buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -235,6 +234,7 @@ export default function Events({ initialEvents = [] }: { initialEvents?: any[] }
           >
             All Events
           </button>
+
           {eventTypes.map((type) => (
             <button
               key={type}
@@ -250,7 +250,7 @@ export default function Events({ initialEvents = [] }: { initialEvents?: any[] }
           ))}
         </motion.div>
 
-        {/* Event Grid */}
+        {/* Loading State */}
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="flex flex-col items-center">
@@ -295,6 +295,7 @@ export default function Events({ initialEvents = [] }: { initialEvents?: any[] }
             </p>
           </motion.div>
         )}
+
       </div>
     </section>
   );
