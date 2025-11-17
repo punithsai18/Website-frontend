@@ -14,6 +14,7 @@ import {
   Users,
   Sparkles,
   Ticket,
+  Search,          // 🔍 NEW
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -49,6 +50,7 @@ export default function Events({ initialEvents }: { initialEvents: any[] }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");   // 🔍 NEW
 
   useEffect(() => {
     if (!initialEvents || initialEvents.length === 0) {
@@ -67,10 +69,17 @@ export default function Events({ initialEvents }: { initialEvents: any[] }) {
   }, [initialEvents]);
 
   const eventTypes = ["upcoming", "past", "workshop", "competition"];
-  const filteredEvents =
-    activeFilter === "all"
-      ? events
-      : events.filter((event) => event.type === activeFilter);
+
+  // ✅ Filter by type AND search by event.name
+  const filteredEvents = events.filter((event) => {
+    const matchesFilter =
+      activeFilter === "all" || event.type === activeFilter;
+    const matchesSearch =
+      event.name
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
 
   interface Event {
     image: string;
@@ -119,7 +128,7 @@ export default function Events({ initialEvents }: { initialEvents: any[] }) {
             </div>
           )}
 
-          {/* ✅ FIXED Image Section */}
+          {/* Image Section */}
           <div className="relative aspect-video w-full overflow-hidden rounded-t-2xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/30 dark:to-indigo-900/20">
             <motion.div
               className="w-full h-full flex items-center justify-center overflow-hidden"
@@ -203,7 +212,7 @@ export default function Events({ initialEvents }: { initialEvents: any[] }) {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="mb-16 text-center"
+          className="mb-10 text-center"
         >
           <div className="inline-flex items-center rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary mb-6">
             <Sparkles className="h-4 w-4 mr-2" /> Upcoming Experiences
@@ -216,6 +225,20 @@ export default function Events({ initialEvents }: { initialEvents: any[] }) {
             expand your IoT horizons.
           </p>
         </motion.div>
+
+        {/* 🔍 Search Bar */}
+        <div className="flex justify-center mb-8">
+          <div className="relative w-full max-w-md">
+            <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search events by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 rounded-full border border-border focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground shadow-sm"
+            />
+          </div>
+        </div>
 
         {/* Filters */}
         <motion.div
@@ -255,7 +278,9 @@ export default function Events({ initialEvents }: { initialEvents: any[] }) {
           <div className="flex justify-center items-center h-64">
             <div className="flex flex-col items-center">
               <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-              <p className="text-muted-foreground">Loading exciting events...</p>
+              <p className="text-muted-foreground">
+                Loading exciting events...
+              </p>
             </div>
           </div>
         ) : error ? (
