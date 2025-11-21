@@ -14,9 +14,9 @@ import {
   Users,
   Sparkles,
   Ticket,
-  Search,          // 🔍 NEW
+  Search,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Variants } from "framer-motion";
 
@@ -45,54 +45,87 @@ const hoverVariants: Variants = {
   },
 };
 
-export default function Events({ initialEvents }: { initialEvents: any[] }) {
-  const [events, setEvents] = useState<any[]>(initialEvents || []);
-  const [loading, setLoading] = useState(false);
+interface Event {
+  image: string;
+  id: number;
+  name: string;
+  date: string;
+  time: string;
+  location: string;
+  description: string;
+  type?: string;
+  attendees?: number;
+  status?: "upcoming" | "past" | "ongoing";
+}
+
+export default function Events({
+  initialEvents = [],
+}: {
+  initialEvents?: Event[];
+}) {
+  const [events, setEvents] = useState<Event[]>(initialEvents || []);
   const [error, setError] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");   // 🔍 NEW
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Decide once whether we need to fetch from API
+  const shouldFetchOnClient = useMemo(
+    () => !initialEvents || initialEvents.length === 0,
+    [initialEvents]
+  );
+
+  const [loading, setLoading] = useState(shouldFetchOnClient);
 
   useEffect(() => {
-    if (!initialEvents || initialEvents.length === 0) {
-      setLoading(true);
-      api
-        .get("/events")
-        .then((res) => {
-          setEvents(res.data);
-          setLoading(false);
-        })
-        .catch(() => {
-          setError("Failed to load events.");
-          setLoading(false);
-        });
+    // If we already have events from the server, don't fetch
+    if (!shouldFetchOnClient) {
+      setLoading(false);
+      return;
     }
-  }, [initialEvents]);
+
+    let cancelled = false;
+
+    const fetchEvents = async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        // ⚠️ Make sure this matches your backend route, often `/api/events`
+        const res = await api.get("/events");
+        if (!cancelled) {
+          setEvents(res.data || []);
+        }
+      } catch (err) {
+        console.error("Error loading events:", err);
+        if (!cancelled) {
+          setError("Failed to load events.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchEvents();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [shouldFetchOnClient]);
 
   const eventTypes = ["upcoming", "past", "workshop", "competition"];
 
-  // ✅ Filter by type AND search by event.name
   const filteredEvents = events.filter((event) => {
     const matchesFilter =
       activeFilter === "all" || event.type === activeFilter;
-    const matchesSearch =
-      event.name
-        ?.toLowerCase()
-        .includes(searchQuery.toLowerCase());
+
+    const matchesSearch = event.name
+      ?.toLowerCase()
+      .includes(searchQuery.toLowerCase());
+
     return matchesFilter && matchesSearch;
   });
-
-  interface Event {
-    image: string;
-    id: number;
-    name: string;
-    date: string;
-    time: string;
-    location: string;
-    description: string;
-    type?: string;
-    attendees?: number;
-    status?: "upcoming" | "past" | "ongoing";
-  }
 
   const EventCard = ({ event, index }: { event: Event; index: number }) => (
     <motion.div
@@ -104,7 +137,6 @@ export default function Events({ initialEvents }: { initialEvents: any[] }) {
     >
       <motion.div variants={hoverVariants} className="h-full">
         <Card className="group flex flex-col h-full overflow-hidden border border-border/50 shadow-lg hover:shadow-2xl hover:shadow-blue-200/20 transition-all duration-500 bg-card/80 backdrop-blur-md rounded-2xl hover:-translate-y-1 relative">
-          {/* Status badge */}
           {event.status && (
             <div
               className={`absolute top-4 right-4 z-10 flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full backdrop-blur-sm ${
@@ -128,7 +160,6 @@ export default function Events({ initialEvents }: { initialEvents: any[] }) {
             </div>
           )}
 
-          {/* Image Section */}
           <div className="relative aspect-video w-full overflow-hidden rounded-t-2xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/30 dark:to-indigo-900/20">
             <motion.div
               className="w-full h-full flex items-center justify-center overflow-hidden"
@@ -146,10 +177,8 @@ export default function Events({ initialEvents }: { initialEvents: any[] }) {
               />
             </motion.div>
 
-            {/* Overlay for readability */}
             <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent"></div>
 
-            {/* Type tag */}
             {event.type && (
               <div className="absolute top-4 left-4 bg-primary/10 text-primary text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur">
                 {event.type}
@@ -157,7 +186,6 @@ export default function Events({ initialEvents }: { initialEvents: any[] }) {
             )}
           </div>
 
-          {/* Content */}
           <CardHeader className="pb-3">
             <CardTitle className="text-xl font-bold tracking-tight group-hover:text-primary transition-colors line-clamp-2">
               {event.name}
@@ -200,7 +228,6 @@ export default function Events({ initialEvents }: { initialEvents: any[] }) {
       id="events"
       className="relative py-20 bg-gradient-to-b from-background to-muted/50 rounded-xl overflow-hidden"
     >
-      {/* Background elements */}
       <div className="absolute top-0 left-0 w-full h-72 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 -skew-y-3 -translate-y-1/2"></div>
       <div className="absolute top-20 -right-20 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 -left-20 w-72 h-72 bg-indigo-400/10 rounded-full blur-3xl"></div>
@@ -226,7 +253,7 @@ export default function Events({ initialEvents }: { initialEvents: any[] }) {
           </p>
         </motion.div>
 
-        {/* 🔍 Search Bar */}
+        {/*  Search Bar */}
         <div className="flex justify-center mb-8">
           <div className="relative w-full max-w-md">
             <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
@@ -273,7 +300,7 @@ export default function Events({ initialEvents }: { initialEvents: any[] }) {
           ))}
         </motion.div>
 
-        {/* Event Grid */}
+        {/* Event Grid / States */}
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="flex flex-col items-center">
